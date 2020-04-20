@@ -1,3 +1,5 @@
+Param( [switch]$renew)
+
 $csvfile = Read-Host "CSVファイル名を入れてください"
 $emails = Import-Csv -Path $csvfile | Select-Object email
 
@@ -25,6 +27,18 @@ $group = Get-AzureADMSGroup -Filter "Mail eq `'$gmail`'"
 If ($false -eq $?) {
     Disconnect-AzureAD
     exit
+}
+
+
+If ($renew) {
+  $members = Get-AzureADGroupMember -All 1 -ObjectId $group.Id
+
+  Write-Host "以下のメンバーを削除します"
+  foreach ($d in $members){
+    Write-Host $d.DisplayName
+    Remove-AzureAdGroupMember -ObjectId $group.Id -MemberId $d.ObjectId
+  }
+  Write-Host "以下のアカウントを追加します"
 }
 
 foreach ($e in $emails) {
